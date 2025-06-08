@@ -1,0 +1,21 @@
+{% extends 'pokedex/base.html' %}
+
+{% block title %}Inicio - PokéExplorer{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">PokéExplorer</h1>
+<form class="d-flex" onsubmit="goToPokemon(); return false;">
+    <input type="text" name="pokemon" class="form-control me-2" placeholder="Ingrese el nombre del Pokémon" required>
+    <button type="submit" class="btn btn-primary">Buscar</button>
+</form>
+<a class="btn btn-secondary mt-3" href="{% url 'compare' %}">Comparar Pokémon</a>
+
+<script>
+    function goToPokemon() {
+        const name = document.querySelector('input[name="pokemon"]').value.trim();
+        if (name) {
+            window.location.href = `/pokemon/${name}`;
+        }
+    }
+</script>
+{% endblock %}

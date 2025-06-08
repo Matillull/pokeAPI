@@ -1,0 +1,26 @@
+{% extends 'pokedex/base.html' %}
+
+{% block title %}{{ pokemon.name|capfirst }} - Detalles{% endblock %}
+
+{% block content %}
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% else %}
+    <h2>{{ pokemon.name|capfirst }}</h2>
+    <img src="{{ pokemon.sprites.front_default }}" class="img-fluid" alt="{{ pokemon.name }}">
+    <p><strong>Tipos:</strong> {{ types|join:", " }}</p>
+    <p><strong>Habilidades:</strong>
+        {% for ability in pokemon.abilities %}
+            {{ ability.ability.name }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    <h5>Estadísticas:</h5>
+    <ul>
+        {% for stat in pokemon.stats %}
+            <li>{{ stat.stat.name }}: {{ stat.base_stat }}</li>
+        {% endfor %}
+    </ul>
+    <p><strong>Debilidades:</strong> {{ weaknesses|join:", " }}</p>
+{% endif %}
+<a href="/" class="btn btn-secondary mt-3">Volver al inicio</a>
+{% endblock %}

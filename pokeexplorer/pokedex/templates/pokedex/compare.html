@@ -1,0 +1,46 @@
+{% extends 'pokedex/base.html' %}
+
+{% block title %}Comparar Pokémon{% endblock %}
+
+{% block content %}
+<h2>Comparar Pokémon</h2>
+<form method="post" class="mb-3">
+    {% csrf_token %}
+    <div class="mb-2">
+        <input type="text" name="pokemon1" placeholder="Primer Pokémon" class="form-control" required>
+    </div>
+    <div class="mb-2">
+        <input type="text" name="pokemon2" placeholder="Segundo Pokémon" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Comparar</button>
+</form>
+
+{% if result %}
+    <h3>{{ result.pokemon1.name|capfirst }} vs {{ result.pokemon2.name|capfirst }}</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Estadística</th>
+                <th>{{ result.pokemon1.name }}</th>
+                <th>{{ result.pokemon2.name }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s1 in result.pokemon1.stats %}
+                <tr>
+                    <td>{{ s1.stat.name }}</td>
+                    <td>{{ s1.base_stat }}</td>
+                    <td>
+                        {% for s2 in result.pokemon2.stats %}
+                            {% if s2.stat.name == s1.stat.name %}
+                                {{ s2.base_stat }}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+<a href="/" class="btn btn-secondary mt-3">Volver al inicio</a>
+{% endblock %}

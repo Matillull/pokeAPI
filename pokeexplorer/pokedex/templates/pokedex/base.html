@@ -7,14 +7,23 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
-<body class="container py-5">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light rounded mb-4 px-3">
-        <a class="navbar-brand" href="/">PokéExplorer</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="{% url 'compare' %}">Comparar Pokémon</a></li>
-            </ul>
-        </div>
+<body class="py-5">
+    <nav class="navbar navbar-expand-lg bg-danger px-5">
+		<!-- Logo de la barra de nagevación -->
+        <a class="navbar-brand" href="/">
+			<img src="{% static 'img/pokeexplorer-logo.png' %}" alt="Logo" height="100" class="me-2">		
+		</a>
+<div class="collapse navbar-collapse">
+	<ul class="nav nav-underline ms-auto">
+		<li class="nav-item">
+			<a class="nav-link text-white fw-bold" href="{% url 'compare' %}">Comparar Pokemón</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link text-white fw-bold" href="#">Q&A</a>
+		</li>
+	</ul>
+</div>
+
     </nav>
 
     {% block content %}

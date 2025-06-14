@@ -1,0 +1,25 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+	background-color: var(---bs-body-bg);
+}
+
+.search-form {
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+a.btn-secondary {
+	width: fit-content;
+	display: block;
+	margin: 0 auto;
+	text-align: center;
+}
+
+
+
+

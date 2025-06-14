@@ -4,23 +4,74 @@
 
 {% block content %}
 {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
+  <div class="alert alert-danger">{{ error }}</div>
 {% else %}
-    <h2>{{ pokemon.name|capfirst }}</h2>
-    <img src="{{ pokemon.sprites.front_default }}" class="img-fluid" alt="{{ pokemon.name }}">
-    <p><strong>Tipos:</strong> {{ types|join:", " }}</p>
-    <p><strong>Habilidades:</strong>
-        {% for ability in pokemon.abilities %}
-            {{ ability.ability.name }}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </p>
-    <h5>Estadísticas:</h5>
-    <ul>
-        {% for stat in pokemon.stats %}
-            <li>{{ stat.stat.name }}: {{ stat.base_stat }}</li>
-        {% endfor %}
-    </ul>
-    <p><strong>Debilidades:</strong> {{ weaknesses|join:", " }}</p>
-{% endif %}
+<div class="container my-5 d-flex justify-content-center">
+  <div id="pokemon-detalles"
+       class="rounded-4 p-4 shadow-lg"
+       style="background-color: {{ bg_color }}; max-width: 700px; width: 100%;">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-4">
+      <div class="text-center text-md-start" style="flex: 1;">
+        <h2 class="fw-bold text-black mb-3">{{ pokemon.name|capfirst }}</h2>
+        <img src="{{ pokemon.sprites.front_default }}"
+             class="img-fluid mb-3"
+             alt="{{ pokemon.name }}"
+             style="max-width: 150px;">
+
+        <table class="table borderless-bottom mx-auto mx-md-0" style="max-width: 280px;">
+          <tbody>
+            <tr>
+              <th scope="row">Tipos:</th>
+              <td>{{ types|join:", " }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Habilidades:</th>
+              <td>
+                {% for ability in pokemon.abilities %}
+                  {{ ability.ability.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Debilidades:</th>
+              <td>{{ weaknesses|join:", " }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="text-center text-md-start" style="flex: 1;">
+        <h5 class="mb-3"><strong>Estadísticas:</strong></h5>
+        <div class="mb-2">
+          {% for stat in pokemon.stats %}
+            <div class="mb-2">
+              <div class="d-flex justify-content-between">
+                <strong class="text-capitalize">{{ stat.stat.name }}</strong>
+              </div>
+              <div class="progress" style="height: 18px; max-width: 260px;">
+                <div class="progress-bar
+                    {% if forloop.counter0|divisibleby:2 %}
+                      bg-orange
+                    {% else %}
+                      bg-secondary
+                    {% endif %}"
+                    role="progressbar"
+                    style="width: {{ stat.base_stat }}%;"
+                    aria-valuenow="{{ stat.base_stat }}"
+                    aria-valuemin="0"
+                    aria-valuemax="150">
+                  {{ stat.base_stat }}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <a href="/" class="btn btn-secondary mt-3">Volver al inicio</a>
+{% endif %}
 {% endblock %}

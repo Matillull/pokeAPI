@@ -6,11 +6,15 @@
 
 body {
 	background-color: var(---bs-body-bg);
+
 }
 
 .search-form {
+    width: 100%;
     max-width: 500px;
     margin: 2rem auto;
+    display: flex;
+    gap: 0.5rem;
 }
 
 a.btn-secondary {
@@ -20,6 +24,42 @@ a.btn-secondary {
 	text-align: center;
 }
 
+.collapse {
+	position: relative;
+	right: 50px;
+}
+
+.bg-orange {
+  background-color: #ff7043 !important; 
+  color: white;
+}
+
+.borderless-bottom {
+  background-color: transparent !important; /* Importante para sobreescribir Bootstrap */
+  width: auto;
+  max-width: 320px;
+}
+
+.borderless-bottom tbody,
+.borderless-bottom tr,
+.borderless-bottom td,
+.borderless-bottom th {
+  background-color: transparent !important; /* Que ninguna celda tenga fondo blanco */
+  color: black; 
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+.borderless-bottom tr:not(:last-child) td,
+.borderless-bottom tr:not(:last-child) th {
+  border-bottom: 1px solid black !important; 
+}
+
+.borderless-bottom tr:last-child td,
+.borderless-bottom tr:last-child th {
+  border-bottom: none !important;
+}
 
 
 

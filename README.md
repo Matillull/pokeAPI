@@ -56,13 +56,13 @@ python manage.py runserver
 **Mockups**
 
 #### Página de Inicio
-![Mockup Inicio](pokeexplorer\pokedex\mockups\index.png)
+![Mockup Inicio](pokeexplorer/pokedex/mockups/index.png)
 
 #### Página de Detalles
-![Mockup Detalles](pokeexplorer\pokedex\mockups\detail.png)
+![Mockup Detalles](pokeexplorer/pokedex/mockups/detail.png)
 
 #### Comparar Pokémon
-![Mockup Comparar](pokeexplorer\pokedex\mockups\compare.png)
+![Mockup Comparar](pokeexplorer/pokedex/mockups/compare.png)
 
 **Mapa de navegación**
 

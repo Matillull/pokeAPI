@@ -57,19 +57,43 @@ def pokemon_detail(request, name):
         return render(request, 'pokedex/detail.html', {'error': f"No se encontró el Pokémon '{name}'."})
 
 def compare_pokemon(request):
-    result = None
+    comparacion = []
+    print("Comparación:", comparacion)
+
     if request.method == 'POST':
         name1 = request.POST.get('pokemon1', '').lower()
         name2 = request.POST.get('pokemon2', '').lower()
 
-        try:
-            poke1 = requests.get(f"{API_BASE}/pokemon/{name1}/").json()
-            poke2 = requests.get(f"{API_BASE}/pokemon/{name2}/").json()
-            result = {
-                'pokemon1': poke1,
-                'pokemon2': poke2
-            }
-        except:
-            result = None
+        for name in [name1, name2]:
+            try:
+                # Obtener datos básicos del Pokémon
+                poke = requests.get(f"{API_BASE}/pokemon/{name}/").json()
 
-    return render(request, 'pokedex/compare.html', {'result': result})
+                # Tipos
+                types = [t['type']['name'] for t in poke['types']]
+
+                # Debilidades
+                weaknesses = []
+                if types:
+                    type_data = requests.get(f"{API_BASE}/type/{types[0]}/").json()
+                    weaknesses = [d['name'] for d in type_data['damage_relations']['double_damage_from']]
+
+                # Color de fondo según el tipo principal
+                main_type = types[0] if types else "normal"
+                bg_color = TYPE_COLORS.get(main_type, "#999999")
+
+                # Agregar al listado de comparación
+                comparacion.append({
+                    'name': name,
+                    'sprites': poke['sprites'],
+                    'types': types,
+                    'abilities': poke['abilities'],
+                    'stats': poke['stats'],
+                    'weaknesses': weaknesses,
+                    'bg_color': bg_color,
+                })
+
+            except:
+                pass  # Si un Pokémon falla, simplemente no lo agregamos
+
+    return render(request, 'pokedex/compare.html', {'comparacion': comparacion})

@@ -15,32 +15,73 @@
     <button type="submit" class="btn btn-primary">Comparar</button>
 </form>
 
-{% if result %}
-    <h3>{{ result.pokemon1.name|capfirst }} vs {{ result.pokemon2.name|capfirst }}</h3>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Estadística</th>
-                <th>{{ result.pokemon1.name }}</th>
-                <th>{{ result.pokemon2.name }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for s1 in result.pokemon1.stats %}
+{% if comparacion %}
+  <div class="container my-5">
+    <div class="row justify-content-center gap-4">
+     {% for poke in comparacion %}
+      <div class="col-md-5">
+        <div class="rounded-4 p-4 shadow-lg" style="background-color: {{ poke.bg_color|default:'#f8d030' }};">
+          <div class="text-center text-md-start">
+            <h2 class="fw-bold text-black mb-3">{{ poke.name|capfirst }}</h2>
+            <img src="{{ poke.sprites.front_default }}"
+                 class="img-fluid mb-3"
+                 alt="{{ poke.name }}"
+                 style="max-width: 150px;">
+
+            <table class="table borderless-bottom mx-auto mx-md-0" style="max-width: 280px;">
+              <tbody>
                 <tr>
-                    <td>{{ s1.stat.name }}</td>
-                    <td>{{ s1.base_stat }}</td>
-                    <td>
-                        {% for s2 in result.pokemon2.stats %}
-                            {% if s2.stat.name == s1.stat.name %}
-                                {{ s2.base_stat }}
-                            {% endif %}
-                        {% endfor %}
-                    </td>
+                  <th scope="row">Tipos:</th>
+                  <td>{{ poke.types|join:", " }}</td>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                <tr>
+                  <th scope="row">Habilidades:</th>
+                  <td>
+                    {% for ability in poke.abilities %}
+                      {{ ability.ability.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Debilidades:</th>
+                  <td>{{ poke.weaknesses|join:", " }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h5 class="mb-3"><strong>Estadísticas:</strong></h5>
+            <div class="mb-2">
+              {% for stat in poke.stats %}
+                <div class="mb-2">
+                  <div class="d-flex justify-content-between">
+                    <strong class="text-capitalize">{{ stat.stat.name }}</strong>
+                  </div>
+                  <div class="progress" style="height: 18px; max-width: 260px;">
+                    <div class="progress-bar
+                        {% if forloop.counter0|divisibleby:2 %}
+                          bg-orange
+                        {% else %}
+                          bg-secondary
+                        {% endif %}"
+                        role="progressbar"
+                        style="width: {{ stat.base_stat }}%;"
+                        aria-valuenow="{{ stat.base_stat }}"
+                        aria-valuemin="0"
+                        aria-valuemax="150">
+                      {{ stat.base_stat }}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 {% endif %}
+
 <a href="/" class="btn btn-secondary mt-3">Volver al inicio</a>
 {% endblock %}

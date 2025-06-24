@@ -59,6 +59,20 @@ a.btn-secondary {
 .borderless-bottom tr:last-child td,
 .borderless-bottom tr:last-child th {
   border-bottom: none !important;
+/* 🔧 Reparar los colores de las barras de progreso */
+.progress-bar.bg-warning {
+  background-color: #ffc107 !important;
+}
+.progress-bar.bg-info {
+  background-color: #0dcaf0 !important;
+}
+.progress-bar.bg-danger {
+  background-color: #dc3545 !important;
+}
+.progress-bar.bg-success {
+  background-color: #198754 !important;
+}
+
 }
 
 

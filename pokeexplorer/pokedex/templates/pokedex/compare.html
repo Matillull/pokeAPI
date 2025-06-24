@@ -5,105 +5,91 @@
 {% block content %}
 <div class="container">
     <h2 class="text-center my-4">Comparar Pokémon</h2>
-    
-    <!-- Formulario con inputs y autocompletado filtrado -->
+
+    <!-- Formulario de comparación, usa autocompletado y submit AJAX -->
     <form method="post" class="mb-5" id="compare-form">
         {% csrf_token %}
         <div class="row g-3">
+            <!-- Campo 1 con lista de autocompletado -->
             <div class="col-md-6 position-relative">
-                <input type="text" name="pokemon1" id="pokemon1" 
-                       class="form-control" 
-                       placeholder="Primer Pokémon"
-                       autocomplete="off"
-                       required>
+                <input type="text" name="pokemon1" id="pokemon1" class="form-control"
+                       placeholder="Primer Pokémon" autocomplete="off" required>
                 <div class="autocomplete-list"></div>
             </div>
+            <!-- Campo 2 con lista de autocompletado -->
             <div class="col-md-6 position-relative">
-                <input type="text" name="pokemon2" id="pokemon2" 
-                       class="form-control" 
-                       placeholder="Segundo Pokémon"
-                       autocomplete="off"
-                       required>
+                <input type="text" name="pokemon2" id="pokemon2" class="form-control"
+                       placeholder="Segundo Pokémon" autocomplete="off" required>
                 <div class="autocomplete-list"></div>
             </div>
         </div>
         <div class="text-center mt-3">
             <button type="submit" class="btn btn-primary btn-lg">
+                <!-- Spinner visible durante AJAX -->
                 <span id="compare-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
                 Comparar
             </button>
         </div>
     </form>
 
-    <!-- Resultados de comparación -->
+    <!-- Bloque que se actualiza por AJAX con los resultados de la comparación -->
     <div id="comparison-results">
         {% if comparacion %}
         <div class="row justify-content-center g-4">
             {% for poke in comparacion %}
             <div class="col-lg-5 col-md-6">
-                <div class="pokemon-card rounded-4 p-4 shadow-lg" 
+                <!-- Card visual para cada Pokémon comparado -->
+                <div class="pokemon-card rounded-4 p-4 shadow-lg"
                      style="background-color: {{ poke.bg_color|default:'#f8d030' }};">
-                    <!-- Encabezado -->
                     <div class="text-center">
                         <h2 class="fw-bold text-black mb-3">{{ poke.name|capfirst }}</h2>
-                        <img src="{{ poke.sprites.front_default }}" 
-                             class="img-fluid pokemon-sprite mb-3" 
-                             alt="{{ poke.name }}"
-                             loading="lazy">
+                        <img src="{{ poke.sprites.front_default }}" class="img-fluid pokemon-sprite mb-3"
+                             alt="{{ poke.name }}" loading="lazy">
                     </div>
 
-                    <!-- Detalles -->
-                    <div class="pokemon-details">
-                        <table class="table table-borderless">
-                            <tbody>
-                                <tr>
-                                    <th class="w-25">Tipos:</th>
-                                    <td>
-                                        {% for type in poke.types %}
-                                        <span class="badge bg-dark me-1">{{ type }}</span>
-                                        {% endfor %}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Habilidades:</th>
-                                    <td>
-                                        {% for ability in poke.abilities %}
-                                        <span class="d-inline-block me-2">{{ ability.ability.name }}</span>
-                                        {% endfor %}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Debilidades:</th>
-                                    <td>
-                                        {% for weakness in poke.weaknesses %}
-                                        <span class="badge bg-danger me-1">{{ weakness }}</span>
-                                        {% endfor %}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Tabla con datos generales -->
+                    <table class="table table-borderless">
+                        <tr>
+                            <th class="w-25">Tipos:</th>
+                            <td>{% for type in poke.types %}<span class="badge bg-dark me-1">{{ type }}</span>{% endfor %}</td>
+                        </tr>
+                        <tr>
+                            <th>Habilidades:</th>
+                            <td>{% for ability in poke.abilities %}<span class="me-2">{{ ability.ability.name }}</span>{% endfor %}</td>
+                        </tr>
+                        <tr>
+                            <th>Debilidades:</th>
+                            <td>{% for weakness in poke.weaknesses %}<span class="badge bg-danger me-1">{{ weakness }}</span>{% endfor %}</td>
+                        </tr>
+                    </table>
 
-                        <!-- Estadísticas con gráficos -->
-                        <h5 class="mb-3 text-center"><strong>Estadísticas Base</strong></h5>
-                        <div class="pokemon-stats">
-                            {% for stat in poke.stats %}
-                            <div class="stat-row mb-3">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="text-capitalize fw-bold">{{ stat.stat.name }}</span>
-                                    <span class="stat-value">{{ stat.base_stat }}</span>
-                                </div>
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar {% cycle 'bg-warning' 'bg-info' %}" 
-                                         role="progressbar" 
-                                         style="width: calc({{ stat.base_stat }} * 100 / 150)%"
-                                         aria-valuenow="{{ stat.base_stat }}"
-                                         aria-valuemin="0"
-                                         aria-valuemax="150">
-                                    </div>
-                                </div>
+                    <!-- Visualización de estadísticas base con barras -->
+                    <h5 class="mb-3 text-center"><strong>Estadísticas Base</strong></h5>
+                    <div class="pokemon-stats">
+                        {% for stat in poke.stats %}
+                        <div class="stat-row mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-capitalize fw-bold">{{ stat.stat.name }}</span>
+                                <span class="stat-value">{{ stat.base_stat }}</span>
                             </div>
-                            {% endfor %}
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar
+                                {% if forloop.counter0|divisibleby:2 %}
+                                    bg-orange
+                                {% else %}
+                                    bg-secondary
+                                {% endif %}"
+                                role="progressbar"
+                                style="width: {{ stat.base_stat }}%;"
+                                aria-valuenow="{{ stat.base_stat }}"
+                                aria-valuemin="0"
+                                aria-valuemax="150">
+                                {{ stat.base_stat }}
+                            </div>
+                          
+                            </div>
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -112,6 +98,7 @@
         {% endif %}
     </div>
 
+    <!-- Botón de retorno al inicio -->
     <div class="text-center mt-4">
         <a href="/" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Volver al inicio
@@ -119,144 +106,116 @@
     </div>
 </div>
 
-<!-- Script para autocompletado filtrado y envío asíncrono -->
+<!-- Script para autocompletar inputs y enviar el formulario vía fetch -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const inputs = [document.getElementById('pokemon1'), document.getElementById('pokemon2')];
     const spinner = document.getElementById('compare-spinner');
     let pokemonList = [];
 
-    // Cargar lista completa una vez
+    // Obtener lista de nombres de Pokémon desde API interna
     fetch('/api/pokemon-list/')
-      .then(res => {
-          if (!res.ok) throw new Error('Error al cargar la lista');
-          return res.json();
-      })
-      .then(data => {
-          pokemonList = data;
-      })
-      .catch(err => console.error(err));
+        .then(res => res.json())
+        .then(data => { pokemonList = data; });
 
-    // Mostrar lista de autocompletado filtrada
+    // Mostrar sugerencias según lo que escribe el usuario
     function showAutocompleteList(input) {
         const listContainer = input.nextElementSibling;
         const val = input.value.toLowerCase();
         listContainer.innerHTML = '';
         if (!val) return;
 
-        const filtered = pokemonList.filter(name => name.startsWith(val)).slice(0, 10);
-
-        filtered.forEach(name => {
+        pokemonList.filter(name => name.startsWith(val)).slice(0, 10).forEach(name => {
             const item = document.createElement('div');
             item.textContent = name;
-            item.classList.add('autocomplete-item', 'p-2', 'border', 'border-bottom-0', 'bg-white');
+            item.className = 'autocomplete-item p-2 border bg-white';
             item.style.cursor = 'pointer';
-            item.addEventListener('click', () => {
-                input.value = name;
-                listContainer.innerHTML = '';
-            });
+            item.onclick = () => { input.value = name; listContainer.innerHTML = ''; };
             listContainer.appendChild(item);
         });
     }
 
+    // Listeners de input + clic afuera
     inputs.forEach(input => {
         input.addEventListener('input', () => showAutocompleteList(input));
-        // Cerrar lista si se hace click fuera del input
         document.addEventListener('click', (e) => {
-            if (e.target !== input) {
-                input.nextElementSibling.innerHTML = '';
-            }
+            if (e.target !== input) input.nextElementSibling.innerHTML = '';
         });
     });
 
-    // Envío asíncrono del formulario
+    // Envío del formulario vía fetch y actualización parcial del HTML
     const form = document.getElementById('compare-form');
-    if (form && spinner) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            spinner.classList.remove('d-none');
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        spinner.classList.remove('d-none');
 
-            try {
-                const formData = new FormData(form);
-                const response = await fetch('/compare/', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {'X-Requested-With': 'XMLHttpRequest'}
-                });
+        try {
+            const formData = new FormData(form);
+            const response = await fetch('/compare/', {
+                method: 'POST',
+                body: formData,
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            });
 
-                if (response.ok) {
-                    const html = await response.text();
-                    const resultsContainer = document.getElementById('comparison-results');
-                    const doc = new DOMParser().parseFromString(html, 'text/html');
-                    const newResults = doc.getElementById('comparison-results');
-                    if (resultsContainer && newResults) {
-                        resultsContainer.innerHTML = newResults.innerHTML;
-                    }
-                } else {
-                    alert('Error al obtener los resultados');
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Ocurrió un error al comparar los Pokémon');
-            } finally {
-                spinner.classList.add('d-none');
+            const html = await response.text();
+            const resultsContainer = document.getElementById('comparison-results');
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const newResults = doc.getElementById('comparison-results');
+
+            if (resultsContainer && newResults) {
+                resultsContainer.innerHTML = newResults.innerHTML;
             }
-        });
-    }
+        } catch (error) {
+            console.error(error);
+            alert('Ocurrió un error al comparar los Pokémon');
+        } finally {
+            spinner.classList.add('d-none');
+        }
+    });
 });
 </script>
 
 <style>
-    .pokemon-card {
-        transition: transform 0.3s ease;
-        margin-bottom: 1.5rem;
-    }
-    .pokemon-card:hover {
-        transform: translateY(-5px);
-    }
-    .pokemon-sprite {
-        transition: transform 0.3s ease;
-        max-width: 150px;
-        height: auto;
-    }
-    .pokemon-sprite:hover {
-        transform: scale(1.1);
-    }
-    .stat-row {
-        max-width: 300px;
-        margin: 0 auto;
-    }
-    .progress {
-        background-color: #e9ecef;
-        border-radius: 0.25rem;
-        overflow: hidden;
-    }
-    .progress-bar {
-        transition: width 0.6s ease;
-    }
-    .bg-warning {
-        background-color: #ffc107 !important;
-    }
-    .bg-info {
-        background-color: #0dcaf0 !important;
-    }
+/* Tarjetas animadas y visuales */
+.pokemon-card {
+    transition: transform 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+.pokemon-card:hover {
+    transform: translateY(-5px);
+}
+.pokemon-sprite {
+    transition: transform 0.3s ease;
+    max-width: 150px;
+}
+.pokemon-sprite:hover {
+    transform: scale(1.1);
+}
 
-    /* Estilos para lista de autocompletado */
-    .autocomplete-list {
-        position: absolute;
-        z-index: 1000;
-        width: 100%;
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid #ced4da;
-        border-top: none;
-        background: white;
-        border-radius: 0 0 .25rem .25rem;
-        box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
-    }
-    .autocomplete-item:hover {
-        background-color: #e9ecef;
-    }
+/* Barras de progreso */
+.stat-row {
+    max-width: 300px;
+    margin: 0 auto;
+}
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Lista de autocompletado */
+.autocomplete-list {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ced4da;
+    border-top: none;
+    background: white;
+    border-radius: 0 0 .25rem .25rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.autocomplete-item:hover {
+    background-color: #e9ecef;
+}
 </style>
-
 {% endblock %}

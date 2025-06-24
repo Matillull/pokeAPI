@@ -6,9 +6,10 @@
 {% block content %}
 <div class="text-center">
     <img src="{% static 'img/pokeexplorer-logo.png' %}" alt="Logo grande" width="300">
-    <p class="lead"><strong>Dónde podes buscar, comparar y más sobre Pokemón</strong></p>
+    <p class="lead"><strong>Dónde podés buscar, comparar y más sobre Pokémon</strong></p>
 </div>
 
+<!-- Formulario de búsqueda con redirección -->
 <form class="search-form" id="search-form" onsubmit="goToPokemon(); return false;">
     <input type="text" name="pokemon" class="form-control autocomplete-input" placeholder="Ingrese el nombre del Pokémon" required autocomplete="off">
     <button type="submit" class="btn btn-primary mt-2">Buscar</button>
@@ -17,6 +18,7 @@
 <a class="btn btn-secondary mt-3" href="{% url 'compare' %}">Comparar Pokémon</a>
 
 <script>
+// Redirige al detalle del Pokémon ingresado
 function goToPokemon() {
     const input = document.querySelector('input[name="pokemon"]');
     const name = input.value.trim();
@@ -25,7 +27,7 @@ function goToPokemon() {
     }
 }
 
-// Autocomplete dinámico
+// Autocompletado dinámico para la búsqueda
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.querySelector('.autocomplete-input');
     const list = document.createElement('div');
@@ -37,9 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetch('/api/pokemon-list/')
         .then(res => res.json())
-        .then(data => {
-            allPokemons = data;
-        });
+        .then(data => { allPokemons = data; });
 
     input.addEventListener('input', () => {
         const val = input.value.toLowerCase();

@@ -3,85 +3,219 @@
 {% block title %}Comparar Pokémon{% endblock %}
 
 {% block content %}
-<h2>Comparar Pokémon</h2>
-<form method="post" class="mb-3">
-    {% csrf_token %}
-    <div class="mb-2">
-        <input type="text" name="pokemon1" placeholder="Primer Pokémon" class="form-control" required>
-    </div>
-    <div class="mb-2">
-        <input type="text" name="pokemon2" placeholder="Segundo Pokémon" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Comparar</button>
-</form>
+<div class="container">
+    <h2 class="text-center my-4">Comparar Pokémon</h2>
 
-{% if comparacion %}
-  <div class="container my-5">
-    <div class="row justify-content-center gap-4">
-     {% for poke in comparacion %}
-      <div class="col-md-5">
-        <div class="rounded-4 p-4 shadow-lg" style="background-color: {{ poke.bg_color|default:'#f8d030' }};">
-          <div class="text-center text-md-start">
-            <h2 class="fw-bold text-black mb-3">{{ poke.name|capfirst }}</h2>
-            <img src="{{ poke.sprites.front_default }}"
-                 class="img-fluid mb-3"
-                 alt="{{ poke.name }}"
-                 style="max-width: 150px;">
-
-            <table class="table borderless-bottom mx-auto mx-md-0" style="max-width: 280px;">
-              <tbody>
-                <tr>
-                  <th scope="row">Tipos:</th>
-                  <td>{{ poke.types|join:", " }}</td>
-                </tr>
-                <tr>
-                  <th scope="row">Habilidades:</th>
-                  <td>
-                    {% for ability in poke.abilities %}
-                      {{ ability.ability.name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">Debilidades:</th>
-                  <td>{{ poke.weaknesses|join:", " }}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <h5 class="mb-3"><strong>Estadísticas:</strong></h5>
-            <div class="mb-2">
-              {% for stat in poke.stats %}
-                <div class="mb-2">
-                  <div class="d-flex justify-content-between">
-                    <strong class="text-capitalize">{{ stat.stat.name }}</strong>
-                  </div>
-                  <div class="progress" style="height: 18px; max-width: 260px;">
-                    <div class="progress-bar
-                        {% if forloop.counter0|divisibleby:2 %}
-                          bg-orange
-                        {% else %}
-                          bg-secondary
-                        {% endif %}"
-                        role="progressbar"
-                        style="width: {{ stat.base_stat }}%;"
-                        aria-valuenow="{{ stat.base_stat }}"
-                        aria-valuemin="0"
-                        aria-valuemax="150">
-                      {{ stat.base_stat }}
-                    </div>
-                  </div>
-                </div>
-              {% endfor %}
+    <!-- Formulario de comparación, usa autocompletado y submit AJAX -->
+    <form method="post" class="mb-5" id="compare-form">
+        {% csrf_token %}
+        <div class="row g-3">
+            <!-- Campo 1 con lista de autocompletado -->
+            <div class="col-md-6 position-relative">
+                <input type="text" name="pokemon1" id="pokemon1" class="form-control"
+                       placeholder="Primer Pokémon" autocomplete="off" required>
+                <div class="autocomplete-list"></div>
             </div>
-
-          </div>
+            <!-- Campo 2 con lista de autocompletado -->
+            <div class="col-md-6 position-relative">
+                <input type="text" name="pokemon2" id="pokemon2" class="form-control"
+                       placeholder="Segundo Pokémon" autocomplete="off" required>
+                <div class="autocomplete-list"></div>
+            </div>
         </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-{% endif %}
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <!-- Spinner visible durante AJAX -->
+                <span id="compare-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                Comparar
+            </button>
+        </div>
+    </form>
 
-<a href="/" class="btn btn-secondary mt-3">Volver al inicio</a>
+    <!-- Bloque que se actualiza por AJAX con los resultados de la comparación -->
+    <div id="comparison-results">
+        {% if comparacion %}
+        <div class="row justify-content-center g-4">
+            {% for poke in comparacion %}
+            <div class="col-lg-5 col-md-6">
+                <!-- Card visual para cada Pokémon comparado -->
+                <div class="pokemon-card rounded-4 p-4 shadow-lg"
+                     style="background-color: {{ poke.bg_color|default:'#f8d030' }};">
+                    <div class="text-center">
+                        <h2 class="fw-bold text-black mb-3">{{ poke.name|capfirst }}</h2>
+                        <img src="{{ poke.sprites.front_default }}" class="img-fluid pokemon-sprite mb-3"
+                             alt="{{ poke.name }}" loading="lazy">
+                    </div>
+
+                    <!-- Tabla con datos generales -->
+                    <table class="table table-borderless">
+                        <tr>
+                            <th class="w-25">Tipos:</th>
+                            <td>{% for type in poke.types %}<span class="badge bg-dark me-1">{{ type }}</span>{% endfor %}</td>
+                        </tr>
+                        <tr>
+                            <th>Habilidades:</th>
+                            <td>{% for ability in poke.abilities %}<span class="me-2">{{ ability.ability.name }}</span>{% endfor %}</td>
+                        </tr>
+                        <tr>
+                            <th>Debilidades:</th>
+                            <td>{% for weakness in poke.weaknesses %}<span class="badge bg-danger me-1">{{ weakness }}</span>{% endfor %}</td>
+                        </tr>
+                    </table>
+
+                    <!-- Visualización de estadísticas base con barras -->
+                    <h5 class="mb-3 text-center"><strong>Estadísticas Base</strong></h5>
+                    <div class="pokemon-stats">
+                        {% for stat in poke.stats %}
+                        <div class="stat-row mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-capitalize fw-bold">{{ stat.stat.name }}</span>
+                                <span class="stat-value">{{ stat.base_stat }}</span>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar
+                                {% if forloop.counter0|divisibleby:2 %}
+                                    bg-orange
+                                {% else %}
+                                    bg-secondary
+                                {% endif %}"
+                                role="progressbar"
+                                style="width: {{ stat.base_stat }}%;"
+                                aria-valuenow="{{ stat.base_stat }}"
+                                aria-valuemin="0"
+                                aria-valuemax="150">
+                                {{ stat.base_stat }}
+                            </div>
+                          
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Botón de retorno al inicio -->
+    <div class="text-center mt-4">
+        <a href="/" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al inicio
+        </a>
+    </div>
+</div>
+
+<!-- Script para autocompletar inputs y enviar el formulario vía fetch -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = [document.getElementById('pokemon1'), document.getElementById('pokemon2')];
+    const spinner = document.getElementById('compare-spinner');
+    let pokemonList = [];
+
+    // Obtener lista de nombres de Pokémon desde API interna
+    fetch('/api/pokemon-list/')
+        .then(res => res.json())
+        .then(data => { pokemonList = data; });
+
+    // Mostrar sugerencias según lo que escribe el usuario
+    function showAutocompleteList(input) {
+        const listContainer = input.nextElementSibling;
+        const val = input.value.toLowerCase();
+        listContainer.innerHTML = '';
+        if (!val) return;
+
+        pokemonList.filter(name => name.startsWith(val)).slice(0, 10).forEach(name => {
+            const item = document.createElement('div');
+            item.textContent = name;
+            item.className = 'autocomplete-item p-2 border bg-white';
+            item.style.cursor = 'pointer';
+            item.onclick = () => { input.value = name; listContainer.innerHTML = ''; };
+            listContainer.appendChild(item);
+        });
+    }
+
+    // Listeners de input + clic afuera
+    inputs.forEach(input => {
+        input.addEventListener('input', () => showAutocompleteList(input));
+        document.addEventListener('click', (e) => {
+            if (e.target !== input) input.nextElementSibling.innerHTML = '';
+        });
+    });
+
+    // Envío del formulario vía fetch y actualización parcial del HTML
+    const form = document.getElementById('compare-form');
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        spinner.classList.remove('d-none');
+
+        try {
+            const formData = new FormData(form);
+            const response = await fetch('/compare/', {
+                method: 'POST',
+                body: formData,
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            });
+
+            const html = await response.text();
+            const resultsContainer = document.getElementById('comparison-results');
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const newResults = doc.getElementById('comparison-results');
+
+            if (resultsContainer && newResults) {
+                resultsContainer.innerHTML = newResults.innerHTML;
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Ocurrió un error al comparar los Pokémon');
+        } finally {
+            spinner.classList.add('d-none');
+        }
+    });
+});
+</script>
+
+<style>
+/* Tarjetas animadas y visuales */
+.pokemon-card {
+    transition: transform 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+.pokemon-card:hover {
+    transform: translateY(-5px);
+}
+.pokemon-sprite {
+    transition: transform 0.3s ease;
+    max-width: 150px;
+}
+.pokemon-sprite:hover {
+    transform: scale(1.1);
+}
+
+/* Barras de progreso */
+.stat-row {
+    max-width: 300px;
+    margin: 0 auto;
+}
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Lista de autocompletado */
+.autocomplete-list {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ced4da;
+    border-top: none;
+    background: white;
+    border-radius: 0 0 .25rem .25rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.autocomplete-item:hover {
+    background-color: #e9ecef;
+}
+</style>
 {% endblock %}

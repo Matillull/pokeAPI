@@ -5,21 +5,83 @@
 
 {% block content %}
 <div class="text-center">
-	<img src="{% static 'img/pokeexplorer-logo.png' %}" alt="Logo grande" width="300">
-	<p class="lead"><strong>Dónde podes buscar, comparar y más sobre Pokemón</strong></p>
+    <img src="{% static 'img/pokeexplorer-logo.png' %}" alt="Logo grande" width="300">
+    <p class="lead"><strong>Dónde podes buscar, comparar y más sobre Pokemón</strong></p>
 </div>
-<form class="search-form" onsubmit="goToPokemon(); return false;">
-    <input type="text" name="pokemon" class="form-control" placeholder="Ingrese el nombre del Pokémon" required>
-    <button type="submit" class="btn btn-primary">Buscar</button>
+
+<form class="search-form" id="search-form" onsubmit="goToPokemon(); return false;">
+    <input type="text" name="pokemon" class="form-control autocomplete-input" placeholder="Ingrese el nombre del Pokémon" required autocomplete="off">
+    <button type="submit" class="btn btn-primary mt-2">Buscar</button>
 </form>
+
 <a class="btn btn-secondary mt-3" href="{% url 'compare' %}">Comparar Pokémon</a>
 
 <script>
-    function goToPokemon() {
-        const name = document.querySelector('input[name="pokemon"]').value.trim();
-        if (name) {
-            window.location.href = `/pokemon/${name}`;
-        }
+function goToPokemon() {
+    const input = document.querySelector('input[name="pokemon"]');
+    const name = input.value.trim();
+    if (name) {
+        window.location.href = `/pokemon/${name}`;
     }
+}
+
+// Autocomplete dinámico
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.querySelector('.autocomplete-input');
+    const list = document.createElement('div');
+    list.classList.add('autocomplete-list');
+    input.parentNode.style.position = 'relative';
+    input.parentNode.appendChild(list);
+
+    let allPokemons = [];
+
+    fetch('/api/pokemon-list/')
+        .then(res => res.json())
+        .then(data => {
+            allPokemons = data;
+        });
+
+    input.addEventListener('input', () => {
+        const val = input.value.toLowerCase();
+        list.innerHTML = '';
+        if (!val) return;
+
+        const filtered = allPokemons.filter(p => p.toLowerCase().startsWith(val)).slice(0, 10);
+        filtered.forEach(pokeName => {
+            const item = document.createElement('div');
+            item.textContent = pokeName;
+            item.classList.add('autocomplete-item');
+            item.addEventListener('click', () => {
+                input.value = pokeName;
+                list.innerHTML = '';
+            });
+            list.appendChild(item);
+        });
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(() => list.innerHTML = '', 150);
+    });
+});
 </script>
+
+<style>
+.autocomplete-list {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    width: 100%;
+    z-index: 1000;
+}
+.autocomplete-item {
+    padding: 8px 10px;
+    cursor: pointer;
+}
+.autocomplete-item:hover {
+    background-color: #e9ecef;
+}
+</style>
+
 {% endblock %}
